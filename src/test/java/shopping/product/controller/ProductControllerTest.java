@@ -6,7 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
+
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,7 +29,9 @@ class ProductControllerTest {
 
     @BeforeEach
     public void MyRestClient() {
-        this.restClient = restClientBuilder.build();
+        this.restClient = restClientBuilder
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
         serverUrl = "http://localhost:"+ serverPort;
     }
 
