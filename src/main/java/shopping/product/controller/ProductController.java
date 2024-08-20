@@ -1,69 +1,46 @@
 package shopping.product.controller;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import shopping.product.Product;
+import shopping.product.service.ProductService;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 @RestController
 @RequestMapping("/api")
 public class ProductController {
-    private final Map<Long, Product> products = new HashMap<>();
 
-    public ProductController() {
-        products.put(8146027L, new Product( 8146027L, "아이스 카페 아메리카노 T", 4500, "https://st.kakaocdn.net/product/gift/product/20231010111814_9a667f9eccc943648797925498bdd8a3.jpg"));
-        products.put(1111111L, new Product( 1111111L,"아이스 라뗴", 4500, "https://st.kakaocdn.net/product/gift/product/20231010111814_9a667f9eccc943648797925498bdd8a3.jpg"));
+    private final ProductService productService;
+
+    @Autowired
+    public ProductController(ProductService productService) {
+        this.productService = productService;
     }
 
     @GetMapping("/products")
     Map<Long, Product> getProducts() {
-        return products;
+        return productService.getProducts();
     }
 
     @GetMapping("/products/{id}")
     Product getProduct(@PathVariable Long id) {
-        return products.get(id);
+        return productService.getProduct(id);
     }
 
     @PostMapping("/products")
-    Long putProduct(@RequestBody Product product){
-
-        Long productId = makeProductId();
-        while (products.containsKey(productId)) {
-            productId = makeProductId();
-        }
-
-        System.out.println("print productId:" + productId);
-        Product inputProduct = new Product(productId, product.name(), product.price(), product.imgeUrl());
-        products.put(productId, inputProduct);
-        return productId;
-    }
-
-    Long makeProductId() {
-        Random random = new Random();
-        Long randomNumber = 100000 + random.nextLong(900000);
-        return  randomNumber;
+    Long insertProduct(@RequestBody Product product){
+        return productService.insertProduct(product);
     }
 
     @PutMapping("/products/{id}")
-    boolean putProduct(@PathVariable Long id, @RequestBody Product product){
-        if(!id.equals(product.id())){
-            return false;
-        }
-        products.put(id, product);
-        System.out.println("updateData:"+products);
-        return true;
+    boolean updateProduct(@PathVariable Long id, @RequestBody Product product){
+        return productService.updateProduct(id, product);
     }
 
     @DeleteMapping("/products/{id}")
     boolean deleteProduct(@PathVariable Long id){
-        if(products.containsKey(id)){
-            products.remove(id);
-        }
-        System.out.println(products);
-        return true;
+        return productService.deleteProduct(id);
     }
 }
