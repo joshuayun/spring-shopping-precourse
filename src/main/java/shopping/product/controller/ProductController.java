@@ -25,7 +25,7 @@ public class ProductController {
     }
 
     @GetMapping("/products/{id}")
-    Product getProduct(@PathVariable Long id) {
+    Product getProduct(@PathVariable("id") Long id) {
         return productService.getProduct(id);
     }
 
@@ -35,12 +35,12 @@ public class ProductController {
     }
 
     @PutMapping("/products/{id}")
-    boolean updateProduct(@PathVariable Long id, @RequestBody Product product){
+    boolean updateProduct(@PathVariable("id") Long id, @RequestBody Product product){
         return productService.updateProduct(id, product);
     }
 
     @DeleteMapping("/products/{id}")
-    boolean deleteProduct(@PathVariable Long id){
+    boolean deleteProduct(@PathVariable("id") Long id){
         return productService.deleteProduct(id);
     }
 }

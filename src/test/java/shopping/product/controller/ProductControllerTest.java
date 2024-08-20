@@ -7,12 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
-
-
+import org.springframework.web.client.RestClientResponseException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProductControllerTest {
@@ -40,14 +42,17 @@ class ProductControllerTest {
     void getProduct() {
         String url = serverUrl + "/api/products/8146027";
         String expected = """
-                {"id":8146027,"name":"아이스 카페 아메리카노 T","price":4500,"imgeUrl":"https://st.kakaocdn.net/product/gift/product/20231010111814_9a667f9eccc943648797925498bdd8a3.jpg"}""";
+                {"id":8146027,"name":"아이스아메리카노","price":4500,"imgeUrl":"https://st.kakaocdn.net/product/gift/product/20231010111814_9a667f9eccc943648797925498bdd8a3.jpg"}""";
+
 
         String actual = restClient.get()
                 .uri(url)
                 .retrieve()
                 .body(String.class);
-
+        System.out.println("actual : " +  actual);
         assertThat(actual).isEqualTo(expected);
+
+
     }
 
     @Test
@@ -55,7 +60,7 @@ class ProductControllerTest {
         String url = serverUrl + "/api/products";
 
         String expected = """
-                {"8146027":{"id":8146027,"name":"아이스 카페 아메리카노 T","price":4500,"imgeUrl":"https://st.kakaocdn.net/product/gift/product/20231010111814_9a667f9eccc943648797925498bdd8a3.jpg"},"1111111":{"id":1111111,"name":"아이스 라뗴","price":4500,"imgeUrl":"https://st.kakaocdn.net/product/gift/product/20231010111814_9a667f9eccc943648797925498bdd8a3.jpg"}}""";
+                {"8146027":{"id":8146027,"name":"아이스아메리카노","price":4500,"imgeUrl":"https://st.kakaocdn.net/product/gift/product/20231010111814_9a667f9eccc943648797925498bdd8a3.jpg"},"1111111":{"id":1111111,"name":"아이스 라뗴","price":4500,"imgeUrl":"https://st.kakaocdn.net/product/gift/product/20231010111814_9a667f9eccc943648797925498bdd8a3.jpg"}}""";
         var actual = restClient.get()
                 .uri(url)
                 .retrieve()
@@ -66,12 +71,11 @@ class ProductControllerTest {
     }
 
     @Test
-    void putProduct(){
+    void insertProduct(){
         String url = serverUrl + "/api/products";
         var json = """
                     {"id":999999,"name":"녹차라뗴","price":9900,"imgeUrl":"https://aaa.jpg"}
                 """;
-
 
         long productId = restClient.post()
                 .uri(url)
@@ -87,10 +91,31 @@ class ProductControllerTest {
                 .body(String.class);
 
         var expected = """
-                {"id":%d,"name":"녹차라뗴","price":9900,"imgeUrl":"https://aaa.jpg"}""".formatted(productId);
+            {"id":%d,"name":"녹차라뗴","price":9900,"imgeUrl":"https://aaa.jpg"}""".formatted(productId);
 
         System.out.println("insertResult: "+actual);
         assertThat(actual).isEqualTo(expected);
+
+    }
+
+    @Test
+    void insertProductWithBadWords(){
+        String url = serverUrl + "/api/products";
+        var json = """
+                    {"id":999999,"name":"fuck","price":9900,"imgeUrl":"https://aaa.jpg"}
+                """;
+
+        RestClientResponseException restClientException = assertThrows(
+                RestClientResponseException.class,
+                () -> restClient.post()
+                        .uri(url)
+                        .header("Content-Type", "application/json")
+                        .body(json)
+                        .retrieve()
+                        .body(ResponseEntity.class)
+        );
+
+        assertThat(restClientException.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 
     }
 
@@ -101,7 +126,6 @@ class ProductControllerTest {
         var json = """
                     {"id":999999,"name":"녹차라뗴","price":9900,"imgeUrl":"https://aaa.jpg"}
                 """;
-
 
         long productId = restClient.post()
                 .uri(url)
@@ -127,6 +151,7 @@ class ProductControllerTest {
                 .retrieve()
                 .body(String.class);
         assertThat(actual).isEqualTo(expected);
+
     }
 
     @Test
@@ -135,7 +160,6 @@ class ProductControllerTest {
         var json = """
                     {"id":999999,"name":"녹차라뗴","price":9900,"imgeUrl":"https://aaa.jpg"}
                 """;
-
 
         long productId = restClient.post()
                 .uri(url)
@@ -154,5 +178,7 @@ class ProductControllerTest {
                 ;
 
         getProducts();
+
+
     }
 }

@@ -3,6 +3,7 @@ package shopping.product.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import shopping.product.CleanTextApiClient;
 import shopping.product.Product;
 import shopping.product.repository.ProductRepository;
 
@@ -14,6 +15,8 @@ public class ProductService {
 
 
     private final ProductRepository productRepository;
+
+
 
     @Autowired
     public ProductService(ProductRepository productRepository) {
@@ -29,6 +32,8 @@ public class ProductService {
     }
 
     public Long insertProduct(Product product) {
+        chceckCleanText(product);
+
         Long productId = makeProductId();
 
         while (productRepository.findByIdContains(productId)) {
@@ -42,6 +47,8 @@ public class ProductService {
     }
 
     public boolean updateProduct(Long id, Product product) {
+        chceckCleanText(product);
+
         if (!id.equals(product.id())) {
             return false;
         }
@@ -67,4 +74,13 @@ public class ProductService {
         Long randomNumber = 100000 + random.nextLong(900000);
         return  randomNumber;
     }
+
+    void chceckCleanText(Product product) {
+        CleanTextApiClient client = new CleanTextApiClient();
+        if(client.isProfanityText(product.name())) {
+            throw new IllegalArgumentException("상품명에는 비속어를 포함할 수 없습니다.");
+        }
+    }
+
+
 }
